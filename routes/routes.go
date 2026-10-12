@@ -1,23 +1,46 @@
-
 package routes
 
 import (
-	controllers "santrikoding/backend-api/controller"
+	"santrikoding/backend-api/controller"
+	"santrikoding/backend-api/middlewares"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 func SetupRouter() *gin.Engine {
+
+	//initialize gin
 	router := gin.Default()
 
-	// Route register
+	// set up CORS
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:  []string{"*"},
+		AllowMethods:  []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:  []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders: []string{"Content-Length"},
+	}))
+
+	// route register
 	router.POST("/api/register", controllers.Register)
 
-	// Route login
+	// route login
 	router.POST("/api/login", controllers.Login)
 
-	// Route untuk mengambil semua data user
-	router.GET("/api/users", controllers.FindUsers)
+	// route users
+	router.GET("/api/users", middlewares.AuthMiddleware(), controllers.FindUsers)
+
+	// route user create
+	router.POST("/api/users", middlewares.AuthMiddleware(), controllers.CreateUser)
+
+	// route user by id
+	router.GET("/api/users/:id", middlewares.AuthMiddleware(), controllers.FindUserById)
+
+	// route user update
+	router.PUT("/api/users/:id", middlewares.AuthMiddleware(), controllers.UpdateUser)
+
+	// route user delete
+	router.DELETE("/api/users/:id", middlewares.AuthMiddleware(), controllers.DeleteUser)
 
 	return router
 }
